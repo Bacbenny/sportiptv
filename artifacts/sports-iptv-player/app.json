@@ -3,7 +3,7 @@
     "name": "Sports IPTV Player",
     "slug": "sports-iptv-player",
     "version": "1.0.0",
-    "orientation": "landscape",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "sports-iptv-player",
     "userInterfaceStyle": "automatic",

@@ -2,12 +2,15 @@ import React from 'react';
 import { Feather } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { useWindowDimensions } from 'react-native';
+import { useIptv } from '@/context/iptv-context';
 import { useColors } from '@/hooks/useColors';
 
 export default function TabLayout() {
   const colors = useColors();
   const { width, height } = useWindowDimensions();
+  const { hasPlaylist } = useIptv();
   const isLandscape = width > height;
+  const hideTabs = !hasPlaylist || isLandscape;
 
   return (
     <Tabs
@@ -15,7 +18,7 @@ export default function TabLayout() {
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.mutedForeground,
-        tabBarStyle: isLandscape
+        tabBarStyle: hideTabs
           ? { display: 'none' }
           : {
               height: 78,
