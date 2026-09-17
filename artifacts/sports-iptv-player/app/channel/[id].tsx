@@ -38,7 +38,7 @@ export default function ChannelScreen() {
         contentContainerStyle={{ paddingBottom: insets.bottom + 30 }}
       >
         <ImageBackground
-          source={channel.image}
+          source={channel.image ?? require('../../assets/images/stadium-hero.png')}
           style={[styles.player, { paddingTop: insets.top + 12 }]}
           imageStyle={styles.playerImage}
         >
