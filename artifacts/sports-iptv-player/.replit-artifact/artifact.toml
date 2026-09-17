@@ -1,0 +1,24 @@
+kind = "mobile"
+previewPath = "/sports-iptv-player/"
+title = "Sports IPTV Player"
+description = "A dark, TV-friendly IPTV player for browsing live sports and entertainment channels, saving favorites, and opening a focused player screen."
+version = "1.0.0"
+id = "artifacts/sports-iptv-player"
+router = "expo-domain"
+
+[[services]]
+name = "expo"
+ensurePreviewReachable = "/status"
+paths = [ "/sports-iptv-player/" ]
+localPort = 24600
+
+[services.development]
+run = "pnpm --filter @workspace/sports-iptv-player run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/sports-iptv-player", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/sports-iptv-player", "run", "serve" ]
+
+[services.env]
+PORT = "24600"
+BASE_PATH = "/sports-iptv-player/"
