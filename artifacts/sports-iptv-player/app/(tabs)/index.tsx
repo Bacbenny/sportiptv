@@ -5,6 +5,7 @@ import * as Haptics from 'expo-haptics';
 import { useMemo, useState } from 'react';
 import {
   Alert,
+  ActivityIndicator,
   Image,
   Modal,
   Platform,
@@ -294,6 +295,9 @@ export default function HomeScreen() {
     playlistName,
     playlistUrl,
     hasPlaylist,
+    isLoading,
+    error,
+    refreshPlaylist,
   } = useIptv();
   const [selectedGroup, setSelectedGroup] = useState('Tất cả');
   const [search, setSearch] = useState('');
@@ -418,6 +422,37 @@ export default function HomeScreen() {
               </Pressable>
             </View>
           </View>
+
+          {(isLoading || error) && (
+            <View
+              style={[
+                styles.syncNotice,
+                {
+                  backgroundColor: error ? colors.destructive + '18' : colors.secondary,
+                  borderColor: error ? colors.destructive + '66' : colors.border,
+                },
+              ]}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <Feather name="alert-circle" size={17} color={colors.destructive} />
+              )}
+              <Text style={[styles.syncText, { color: colors.foreground }]}>
+                {isLoading ? 'Đang tải playlist…' : error}
+              </Text>
+              {error && (
+                <Pressable
+                  accessibilityLabel="Tải lại playlist"
+                  hitSlop={8}
+                  onPress={() => void refreshPlaylist()}
+                  style={[styles.retryButton, { backgroundColor: colors.primary }]}
+                >
+                  <Feather name="refresh-cw" size={15} color={colors.primaryForeground} />
+                </Pressable>
+              )}
+            </View>
+          )}
 
           <ScrollView
             horizontal
@@ -594,6 +629,24 @@ const styles = StyleSheet.create({
   brandText: { fontFamily: 'Inter_700Bold', fontSize: 14, letterSpacing: 1.2 },
   playlistLabel: { fontFamily: 'Inter_400Regular', fontSize: 9, marginTop: 2 },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  syncNotice: {
+    borderWidth: 1,
+    borderRadius: 14,
+    minHeight: 44,
+    paddingHorizontal: 12,
+    marginTop: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+  },
+  syncText: { flex: 1, fontFamily: 'Inter_500Medium', fontSize: 12, lineHeight: 17 },
+  retryButton: {
+    width: 30,
+    height: 30,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   searchInput: {
     width: 128,
     height: 36,

@@ -12,6 +12,8 @@ export type Channel = {
   schedule: string;
   accent: string;
   logoColor: string;
+  logoUrl?: string;
+  streamUrl?: string;
   image?: ImageSourcePropType;
   isLive: boolean;
   isFeatured?: boolean;

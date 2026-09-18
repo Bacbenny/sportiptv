@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Enable pnpm
         run: corepack enable
@@ -26,16 +26,16 @@ jobs:
 
       - name: Generate Android project
         working-directory: artifacts/sports-iptv-player
-        run: CI=1 pnpm exec expo prebuild --platform android
+        run: CI=1 pnpm exec expo prebuild --platform android --no-install
 
       - name: Build release APK
         working-directory: artifacts/sports-iptv-player/android
-        run: ./gradlew assembleRelease
+        run: ./gradlew assembleRelease --no-daemon
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.0
-          name: SportIPTV v1.0.0
+          tag_name: sportiptv-v1.0.${{ github.run_number }}
+          name: SportIPTV v1.0.${{ github.run_number }}
           generate_release_notes: true
           files: artifacts/sports-iptv-player/android/app/build/outputs/apk/release/app-release.apk

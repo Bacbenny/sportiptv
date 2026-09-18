@@ -1,4 +1,5 @@
 import { Feather } from '@expo/vector-icons';
+import { VideoView, useVideoPlayer } from 'expo-video';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { useState } from 'react';
@@ -14,6 +15,63 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ChannelLogo } from '@/components/ChannelLogo';
 import { useIptv } from '@/context/iptv-context';
 import { useColors } from '@/hooks/useColors';
+
+function LiveStreamSurface({
+  streamUrl,
+  topInset,
+  favorite,
+  quality,
+  colors,
+  onBack,
+  onToggleFavorite,
+  onQuality,
+}: {
+  streamUrl: string;
+  topInset: number;
+  favorite: boolean;
+  quality: string;
+  colors: ReturnType<typeof useColors>;
+  onBack: () => void;
+  onToggleFavorite: () => void;
+  onQuality: () => void;
+}) {
+  const player = useVideoPlayer(streamUrl, (instance) => {
+    instance.play();
+  });
+
+  return (
+    <View style={[styles.player, { paddingTop: topInset + 12 }]}>
+      <VideoView
+        player={player}
+        style={styles.video}
+        contentFit="contain"
+        nativeControls
+        allowsFullscreen
+        allowsPictureInPicture
+      />
+      <View style={styles.playerShade} pointerEvents="none" />
+      <View style={styles.playerTop}>
+        <Pressable onPress={onBack} style={styles.playerButton}>
+          <Feather name="arrow-left" size={20} color="#FFFFFF" />
+        </Pressable>
+        <View style={styles.playerTools}>
+          <Pressable onPress={onQuality} style={styles.qualityButton}>
+            <Text style={styles.qualityText}>{quality}</Text>
+            <Feather name="chevron-down" size={13} color="#FFFFFF" />
+          </Pressable>
+          <Pressable onPress={onToggleFavorite} style={styles.playerButton}>
+            <Feather
+              name="heart"
+              size={18}
+              color={favorite ? colors.destructive : '#FFFFFF'}
+              fill={favorite ? colors.destructive : 'transparent'}
+            />
+          </Pressable>
+        </View>
+      </View>
+    </View>
+  );
+}
 
 export default function ChannelScreen() {
   const colors = useColors();
@@ -37,74 +95,82 @@ export default function ChannelScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: insets.bottom + 30 }}
       >
-        <ImageBackground
-          source={channel.image ?? require('../../assets/images/stadium-hero.png')}
-          style={[styles.player, { paddingTop: insets.top + 12 }]}
-          imageStyle={styles.playerImage}
-        >
-          <View style={styles.playerShade} />
-          <View style={styles.playerTop}>
-            <Pressable onPress={() => router.back()} style={styles.playerButton}>
-              <Feather name="arrow-left" size={20} color="#FFFFFF" />
-            </Pressable>
-            <View style={styles.playerTools}>
-              <Pressable
-                onPress={() =>
-                  setQuality(quality === 'Auto' ? channel.quality : 'Auto')
-                }
-                style={styles.qualityButton}
-              >
-                <Text style={styles.qualityText}>{quality}</Text>
-                <Feather name="chevron-down" size={13} color="#FFFFFF" />
+        {channel.streamUrl ? (
+          <LiveStreamSurface
+            streamUrl={channel.streamUrl}
+            topInset={insets.top}
+            favorite={favorite}
+            quality={quality}
+            colors={colors}
+            onBack={() => router.back()}
+            onToggleFavorite={() => toggleFavorite(channel.id)}
+            onQuality={() => setQuality(quality === 'Auto' ? channel.quality : 'Auto')}
+          />
+        ) : (
+          <ImageBackground
+            source={channel.image ?? require('../../assets/images/stadium-hero.png')}
+            style={[styles.player, { paddingTop: insets.top + 12 }]}
+            imageStyle={styles.playerImage}
+          >
+            <View style={styles.playerShade} />
+            <View style={styles.playerTop}>
+              <Pressable onPress={() => router.back()} style={styles.playerButton}>
+                <Feather name="arrow-left" size={20} color="#FFFFFF" />
               </Pressable>
+              <View style={styles.playerTools}>
+                <Pressable
+                  onPress={() => setQuality(quality === 'Auto' ? channel.quality : 'Auto')}
+                  style={styles.qualityButton}
+                >
+                  <Text style={styles.qualityText}>{quality}</Text>
+                  <Feather name="chevron-down" size={13} color="#FFFFFF" />
+                </Pressable>
+                <Pressable onPress={() => toggleFavorite(channel.id)} style={styles.playerButton}>
+                  <Feather
+                    name="heart"
+                    size={18}
+                    color={favorite ? colors.destructive : '#FFFFFF'}
+                    fill={favorite ? colors.destructive : 'transparent'}
+                  />
+                </Pressable>
+              </View>
+            </View>
+            <View style={styles.playerCenter}>
               <Pressable
-                onPress={() => toggleFavorite(channel.id)}
-                style={styles.playerButton}
+                testID="player-toggle"
+                onPress={togglePlay}
+                style={[styles.mainPlay, { backgroundColor: colors.primary }]}
               >
                 <Feather
-                  name="heart"
-                  size={18}
-                  color={favorite ? colors.destructive : '#FFFFFF'}
-                  fill={favorite ? colors.destructive : 'transparent'}
+                  name={playing ? 'pause' : 'play'}
+                  size={25}
+                  color={colors.primaryForeground}
+                  fill={colors.primaryForeground}
                 />
               </Pressable>
+              <Text style={styles.previewLabel}>
+                {playing ? 'PLAYING DEMO PREVIEW' : 'DEMO PREVIEW'}
+              </Text>
             </View>
-          </View>
-          <View style={styles.playerCenter}>
-            <Pressable
-              testID="player-toggle"
-              onPress={togglePlay}
-              style={[styles.mainPlay, { backgroundColor: colors.primary }]}
-            >
-              <Feather
-                name={playing ? 'pause' : 'play'}
-                size={25}
-                color={colors.primaryForeground}
-                fill={colors.primaryForeground}
-              />
-            </Pressable>
-            <Text style={styles.previewLabel}>
-              {playing ? 'PLAYING DEMO PREVIEW' : 'DEMO PREVIEW'}
-            </Text>
-          </View>
-          <View style={styles.playerBottom}>
-            <View style={styles.progressTrack}>
-              <View
-                style={[
-                  styles.progressFill,
-                  {
-                    backgroundColor: colors.primary,
-                    width: playing ? '48%' : '22%',
-                  },
-                ]}
-              />
+            <View style={styles.playerBottom}>
+              <View style={styles.progressTrack}>
+                <View
+                  style={[
+                    styles.progressFill,
+                    {
+                      backgroundColor: colors.primary,
+                      width: playing ? '48%' : '22%',
+                    },
+                  ]}
+                />
+              </View>
+              <View style={styles.timeRow}>
+                <Text style={styles.time}>00:{playing ? '18' : '00'}</Text>
+                <Text style={styles.time}>LIVE</Text>
+              </View>
             </View>
-            <View style={styles.timeRow}>
-              <Text style={styles.time}>00:{playing ? '18' : '00'}</Text>
-              <Text style={styles.time}>LIVE</Text>
-            </View>
-          </View>
-        </ImageBackground>
+          </ImageBackground>
+        )}
 
         <View style={styles.info}>
           <View style={styles.infoTop}>
@@ -203,6 +269,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   playerImage: { opacity: 0.96 },
+  video: { ...StyleSheet.absoluteFill },
   playerShade: {
     ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(5,12,23,0.48)',
