@@ -28,6 +28,23 @@ jobs:
         working-directory: artifacts/sports-iptv-player
         run: CI=1 pnpm exec expo prebuild --platform android --no-install
 
+      - name: Configure Kotlin opt-in for Expo video
+        working-directory: artifacts/sports-iptv-player
+        run: |
+          printf '\nEXPO_TURN_WARNINGS_INTO_ERRORS=false\n' >> android/gradle.properties
+          cat >> android/build.gradle <<'EOF'
+
+          // expo-video exposes its native module with this React Native annotation.
+          subprojects { subproject ->
+            if (subproject.name == "expo") {
+              subproject.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+                compilerOptions.freeCompilerArgs.add("-opt-in=com.facebook.react.common.annotations.UnstableReactNativeAPI")
+                compilerOptions.allWarningsAsErrors.set(false)
+              }
+            }
+          }
+          EOF
+
       - name: Build release APK
         working-directory: artifacts/sports-iptv-player/android
         run: ./gradlew assembleRelease --no-daemon
